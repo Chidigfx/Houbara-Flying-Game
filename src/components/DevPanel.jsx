@@ -19,6 +19,7 @@ export default function DevPanel({
   gamepadConnected,
   gamepadId,
   onSkipScene,
+  onExportGLB,
   onComplete,
 }) {
   if (!visible) return null;
@@ -91,6 +92,23 @@ export default function DevPanel({
         >
           Next Gate [N]
         </button>
+        {renderMode === '3d' && (
+          <button
+            onClick={onExportGLB}
+            style={{
+              background: 'rgba(245, 201, 107, 0.35)',
+              border: '1px solid #f5c96b',
+              color: '#ffe599',
+              borderRadius: 4,
+              padding: '4px 8px',
+              fontSize: 10,
+              fontWeight: 'bold',
+              cursor: 'pointer',
+            }}
+          >
+            Export to Blender (.GLB) [X]
+          </button>
+        )}
         <button
           onClick={onComplete}
           style={{

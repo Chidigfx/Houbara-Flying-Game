@@ -60,6 +60,7 @@ export default function GameScreen({ onComplete, onExit }) {
   const [showSteeringPrompt, setShowSteeringPrompt] = useState(true);
   const [showDevPanel, setShowDevPanel] = useState(config.dev.showDebugPanel);
   const [videoError, setVideoError] = useState(null);
+  const [exportNotice, setExportNotice] = useState(null);
   const [endFade, setEndFade] = useState(false);
   const [mounted, setMounted] = useState(() => new URLSearchParams(window.location.search).has('static'));
 
@@ -128,13 +129,32 @@ export default function GameScreen({ onComplete, onExit }) {
     setRenderMode((prev) => (prev === '3d' ? 'video' : '3d'));
   }, []);
 
-  /* ── Dev keys: Backquote/` or F2 panel, M mode toggle, N next gate, F fullscreen ── */
+  const handleExportGLB = useCallback(async () => {
+    if (renderMode !== '3d' || !world3dRef.current?.exportSceneToGLB) {
+      setExportNotice('GLB Export is only available in 3D Flight Mode. Switch with [M].');
+      setTimeout(() => setExportNotice(null), 3500);
+      return;
+    }
+    try {
+      setExportNotice('Exporting high-fidelity 3D scene to Blender (.GLB)...');
+      const res = await world3dRef.current.exportSceneToGLB();
+      setExportNotice(`Downloaded ${res.fileName}! Ready to edit in Blender.`);
+      setTimeout(() => setExportNotice(null), 4500);
+    } catch (err) {
+      console.error('Export error:', err);
+      setExportNotice('Export failed: ' + (err.message || err));
+      setTimeout(() => setExportNotice(null), 4500);
+    }
+  }, [renderMode]);
+
+  /* ── Dev keys: Backquote/` or F2 panel, M mode toggle, N next gate, X export GLB, F fullscreen ── */
   useEffect(() => {
     const onKey = (e) => {
       if (e.code === 'Backquote' || e.code === 'F2' || (e.code === 'KeyD' && e.shiftKey)) {
         setShowDevPanel((v) => !v);
       } else if (e.code === 'KeyM') toggleRenderMode();
       else if (e.code === 'KeyN' && config.dev.allowSkipWithKey) skipToGate();
+      else if (e.code === 'KeyX') handleExportGLB();
       else if (e.code === 'KeyF') {
         if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
         else document.exitFullscreen().catch(() => {});
@@ -142,7 +162,7 @@ export default function GameScreen({ onComplete, onExit }) {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [config.dev.allowSkipWithKey, skipToGate, toggleRenderMode]);
+  }, [config.dev.allowSkipWithKey, skipToGate, toggleRenderMode, handleExportGLB]);
 
   /* ── 3D Mode Callbacks ──────────────────────────────────────────── */
   const handle3DProgress = useCallback(
@@ -446,8 +466,36 @@ export default function GameScreen({ onComplete, onExit }) {
         gamepadConnected={gamepadConnected}
         gamepadId={gamepadId}
         onSkipScene={skipToGate}
+        onExportGLB={handleExportGLB}
         onComplete={() => onCompleteRef.current()}
       />
+
+      {/* Export notification toast */}
+      {exportNotice && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 24,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 9999,
+            background: 'rgba(8, 18, 14, 0.94)',
+            border: '1px solid #F5C96B',
+            borderRadius: 8,
+            padding: '10px 22px',
+            color: '#F5C96B',
+            fontFamily: 'monospace',
+            fontSize: 13,
+            fontWeight: 'bold',
+            letterSpacing: '0.04em',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.75)',
+            pointerEvents: 'none',
+            animation: 'fadeIn 0.3s ease',
+          }}
+        >
+          {exportNotice}
+        </div>
+      )}
 
       {/* End-of-journey fade */}
       <div

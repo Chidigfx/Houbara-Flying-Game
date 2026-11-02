@@ -1,5 +1,6 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import * as THREE from 'three';
+import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
 import GAME_CONFIG from '../config/gameConfig';
 import { createCheckpointDome3D } from './CheckpointDome';
 
@@ -32,6 +33,57 @@ function riverCenterX(z) {
 
 function migrationRouteX(z) {
   return Math.sin(z * 0.0055 - 0.35) * 26.0 + Math.cos(z * 0.011 + 0.5) * 10.0;
+}
+
+function getDisplacedY(worldX, worldZ, biome) {
+  const rCenter = riverCenterX(worldZ);
+  const dist = Math.abs(worldX - rCenter);
+
+  const wForest = clamp(1.0 - biome, 0.0, 1.0);
+  const wMountain = clamp(1.0 - Math.abs(biome - 1.0), 0.0, 1.0);
+  const wDesert = clamp(1.0 - Math.abs(biome - 2.0), 0.0, 1.0);
+
+  // River channel depression
+  const riverCut = smoothstep(0.0, 16.0, dist);
+  const riverDepth = -2.6 * (1.0 - riverCut) * wForest;
+
+  // Valley floor undulation
+  const wave1 = Math.sin(worldX * 0.045 + worldZ * 0.032) * Math.cos(worldX * 0.028 - worldZ * 0.041);
+  const wave2 = Math.sin(worldX * 0.085 - worldZ * 0.065 + 1.7) * 0.5;
+  const floorUndulation = (wave1 * 0.5 + 0.5) * 4.2 + (wave2 * 0.5 + 0.5) * 2.4;
+  const standardFloor = floorUndulation * lerp(1.0, smoothstep(12.0, 28.0, dist), wForest);
+
+  // Barchan / Crescent Sand Dunes (Desert)
+  let desertDunes = standardFloor;
+  if (wDesert > 0.001) {
+    const warp = Math.sin(worldX * 0.0075 + worldZ * 0.0075) * 34.0;
+    const d1 = Math.sin(worldX * 0.026 + worldZ * 0.015 + warp * 0.09);
+    const c1 = Math.max(0.0, 1.0 - Math.sqrt(d1 * d1 + 0.01) * 0.98);
+    const crest1 = (c1 * c1) * 11.5;
+
+    const d2 = Math.sin(worldX * 0.016 - worldZ * 0.024 + warp * 0.07 + 1.4);
+    const c2 = Math.max(0.0, 1.0 - Math.sqrt(d2 * d2 + 0.015) * 0.98);
+    const crest2 = (c2 * c2) * 7.5;
+
+    const rolling = (Math.sin(worldX * 0.009 + worldZ * 0.009) * 0.5 + 0.5) * 4.5;
+    desertDunes = crest1 + crest2 + rolling - 3.5;
+  }
+
+  const baseFloor = lerp(standardFloor, desertDunes, wDesert);
+
+  // Mountain / Canyon walls
+  const canyonWall = smoothstep(22.0, 95.0, dist);
+  const mountainPeak = smoothstep(45.0, 125.0, dist);
+
+  const wallFbm = (Math.sin(worldX * 0.012) * Math.cos(worldZ * 0.012) * 0.5 + 0.5) * 22.0;
+  const wallRidged = (Math.sin(worldX * 0.008 + worldZ * 0.008) * 0.5 + 0.5) * 38.0;
+
+  const mtnWallHeight = canyonWall * wallFbm + mountainPeak * wallRidged * (1.1 + wMountain * 0.55);
+  const desertWallHeight = canyonWall * ((Math.sin(worldX * 0.008) * 0.5 + 0.5) * 16.0 + 4.0);
+
+  const finalWall = lerp(mtnWallHeight, desertWallHeight, wDesert);
+
+  return riverDepth + baseFloor + finalWall;
 }
 
 function getValleySurfaceY(worldX, worldZ, biome) {
@@ -549,6 +601,7 @@ const FlightWorld3D = forwardRef(function FlightWorld3D(
   ref
 ) {
   const mountRef = useRef(null);
+  const worldContextRef = useRef(null);
   const getInputRef = useRef(getInput);
   getInputRef.current = getInput;
 
@@ -588,6 +641,220 @@ const FlightWorld3D = forwardRef(function FlightWorld3D(
     },
     getState() {
       return stateRef.current;
+    },
+    exportSceneToGLB(stageOverride) {
+      const ctx = worldContextRef.current;
+      const s = stateRef.current;
+      const biome = Number.isFinite(stageOverride) ? stageOverride : (s.currentBiome ?? 0);
+      const biomeNames = ['Arabian_Oasis', 'Zagros_Mountains', 'Karakum_Desert', 'Northern_Steppe'];
+      const stageName = biomeNames[Math.min(Math.max(0, Math.floor(biome)), 3)] || 'Biome';
+
+      const exportGroup = new THREE.Group();
+      exportGroup.name = `Houbara_Flight_Scene_${stageName}`;
+
+      // 1. Terrain Mesh (High-Fidelity Displaced Geometry)
+      const TERRAIN_DEPTH = 720;
+      const terrainGeo = new THREE.PlaneGeometry(540, TERRAIN_DEPTH, 180, 240);
+      terrainGeo.rotateX(-Math.PI / 2);
+      terrainGeo.translate(0, 0, -320);
+
+      const posAttr = terrainGeo.attributes.position;
+      const currentZ = s.worldZ || 0;
+      for (let i = 0; i < posAttr.count; i++) {
+        const x = posAttr.getX(i);
+        const zLocal = posAttr.getZ(i);
+        const worldZ = zLocal + currentZ;
+        const y = getDisplacedY(x, worldZ, biome);
+        posAttr.setY(i, y);
+      }
+      posAttr.needsUpdate = true;
+      terrainGeo.computeVertexNormals();
+
+      const palette = BIOME_PALETTES[Math.min(Math.floor(biome), 3)] || BIOME_PALETTES[0];
+      const terrainMat = new THREE.MeshStandardMaterial({
+        color: palette.rockColor.clone().lerp(new THREE.Color('#3d5428'), biome === 0 ? 0.75 : 0.08),
+        roughness: 0.9,
+        metalness: 0.05,
+        name: `Mat_Terrain_${stageName}`,
+      });
+      const terrainMesh = new THREE.Mesh(terrainGeo, terrainMat);
+      terrainMesh.name = `Terrain_${stageName}`;
+      exportGroup.add(terrainMesh);
+
+      // 2. River Water (if Oasis/Forest stage)
+      if (biome < 1.1) {
+        const riverGeo = new THREE.PlaneGeometry(38, TERRAIN_DEPTH, 14, 120);
+        riverGeo.rotateX(-Math.PI / 2);
+        riverGeo.translate(0, 0, -320);
+        const rPos = riverGeo.attributes.position;
+        for (let i = 0; i < rPos.count; i++) {
+          const xLocal = rPos.getX(i);
+          const zLocal = rPos.getZ(i);
+          const worldZ = zLocal + currentZ;
+          const rc = riverCenterX(worldZ);
+          rPos.setX(i, rc + xLocal);
+          rPos.setY(i, -0.6);
+        }
+        rPos.needsUpdate = true;
+        riverGeo.computeVertexNormals();
+
+        const riverMat = new THREE.MeshStandardMaterial({
+          color: 0x1f5c6e,
+          roughness: 0.15,
+          metalness: 0.1,
+          transparent: true,
+          opacity: 0.82,
+          name: 'Mat_River_Water',
+        });
+        const riverMesh = new THREE.Mesh(riverGeo, riverMat);
+        riverMesh.name = 'River_Water';
+        exportGroup.add(riverMesh);
+      }
+
+      // 3. Checkpoint Golden Dome & Ground Contact Ring
+      const domeGeo = new THREE.SphereGeometry(64, 48, 24, 0, Math.PI * 2, 0, Math.PI * 0.51);
+      domeGeo.scale(1.0, 0.88, 1.0);
+      const domeMat = new THREE.MeshStandardMaterial({
+        color: 0xF5C96B,
+        emissive: 0x5a4112,
+        emissiveIntensity: 0.4,
+        metalness: 0.8,
+        roughness: 0.25,
+        transparent: true,
+        opacity: 0.55,
+        side: THREE.DoubleSide,
+        name: 'Mat_Checkpoint_Dome',
+      });
+      const domeMesh = new THREE.Mesh(domeGeo, domeMat);
+      domeMesh.name = 'Golden_Checkpoint_Dome';
+
+      const ringGeo = new THREE.RingGeometry(64 * 0.975, 64 * 1.015, 64);
+      ringGeo.rotateX(-Math.PI / 2);
+      ringGeo.translate(0, 0.35, 0);
+      const ringMat = new THREE.MeshStandardMaterial({
+        color: 0xFFF0B8,
+        emissive: 0x886618,
+        emissiveIntensity: 0.5,
+        metalness: 0.9,
+        roughness: 0.15,
+        name: 'Mat_Dome_BaseRing',
+      });
+      const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+      ringMesh.name = 'Golden_Ground_Ring';
+
+      const domeHolder = new THREE.Group();
+      domeHolder.name = 'Checkpoint_Structure';
+      domeHolder.add(domeMesh);
+      domeHolder.add(ringMesh);
+      domeHolder.position.set(migrationRouteX(currentZ - 320), -1.5, -320);
+      exportGroup.add(domeHolder);
+
+      // 4. Migration Waypoint Route Orbs
+      const waypointsGroup = new THREE.Group();
+      waypointsGroup.name = 'Migration_Waypoints_Trail';
+      const orbGeo = new THREE.SphereGeometry(0.55, 12, 12);
+      const orbMat = new THREE.MeshStandardMaterial({
+        color: 0xffefb8,
+        emissive: 0xf3d795,
+        emissiveIntensity: 0.8,
+        metalness: 0.6,
+        roughness: 0.2,
+        name: 'Mat_Waypoint_Orb',
+      });
+      for (let k = 0; k < 28; k++) {
+        const wz = currentZ - k * 22;
+        const wx = migrationRouteX(wz);
+        const wy = 14.5 + Math.sin(k * 0.45) * 1.8;
+        const orb = new THREE.Mesh(orbGeo, orbMat);
+        orb.name = `Waypoint_${k + 1}`;
+        orb.position.set(wx, wy, -k * 22);
+        waypointsGroup.add(orb);
+      }
+      exportGroup.add(waypointsGroup);
+
+      // 5. Houbara Bustard Bird Model
+      if (ctx && ctx.birdTexture) {
+        const birdGeo = new THREE.PlaneGeometry(4.3, 1.9, 16, 8);
+        const birdMat = new THREE.MeshStandardMaterial({
+          map: ctx.birdTexture,
+          transparent: true,
+          alphaTest: 0.08,
+          roughness: 0.6,
+          side: THREE.DoubleSide,
+          name: 'Mat_Houbara_Bird',
+        });
+        const birdMesh = new THREE.Mesh(birdGeo, birdMat);
+        birdMesh.name = 'Houbara_Bustard_Bird';
+        birdMesh.position.set(s.birdX || 0, s.birdY || 16.5, -14);
+        birdMesh.rotation.z = s.birdTilt || 0;
+        birdMesh.rotation.x = -0.14;
+        exportGroup.add(birdMesh);
+      }
+
+      // 6. Instanced Trees & Boulders
+      if (ctx && ctx.treeInst) {
+        const trees = ctx.treeInst.clone();
+        trees.name = 'Trees_Vegetation';
+        trees.material = new THREE.MeshStandardMaterial({
+          color: palette.foliageColor,
+          roughness: 0.8,
+          flatShading: true,
+          name: 'Mat_Trees',
+        });
+        exportGroup.add(trees);
+      }
+      if (ctx && ctx.rockInst) {
+        const rocks = ctx.rockInst.clone();
+        rocks.name = 'Rocks_Boulders';
+        rocks.material = new THREE.MeshStandardMaterial({
+          color: palette.rockColor,
+          roughness: 0.9,
+          flatShading: true,
+          name: 'Mat_Rocks',
+        });
+        exportGroup.add(rocks);
+      }
+
+      // 7. Lighting
+      const sun = new THREE.DirectionalLight(0xfff4e0, 2.0);
+      sun.name = 'Sun_Light';
+      sun.position.set(70, 140, 60);
+      exportGroup.add(sun);
+
+      const amb = new THREE.AmbientLight(0xdbe6f0, 0.65);
+      amb.name = 'Sky_Ambient';
+      exportGroup.add(amb);
+
+      // 8. GLTFExporter Execution
+      return new Promise((resolve, reject) => {
+        const exporter = new GLTFExporter();
+        exporter.parse(
+          exportGroup,
+          (gltfBinary) => {
+            try {
+              const blob = new Blob([gltfBinary], { type: 'model/gltf-binary' });
+              const fileName = `houbara_flight_${stageName.toLowerCase()}.glb`;
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.href = url;
+              link.download = fileName;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              setTimeout(() => URL.revokeObjectURL(url), 1000);
+              console.log(`[GLB Export] Successfully exported 3D scene to ${fileName}`);
+              resolve({ fileName, blob });
+            } catch (err) {
+              reject(err);
+            }
+          },
+          (err) => {
+            console.error('[GLB Export] Failed:', err);
+            reject(err);
+          },
+          { binary: true, embedImages: true }
+        );
+      });
     },
   }));
 
@@ -917,6 +1184,18 @@ const FlightWorld3D = forwardRef(function FlightWorld3D(
     flockGroup.visible = false;
     scene.add(flockGroup);
 
+    worldContextRef.current = {
+      scene,
+      camera,
+      birdGroup,
+      birdTexture,
+      treeInst,
+      rockInst,
+      checkpointDomes,
+      orbs,
+      renderer,
+    };
+
     /* ── Resize Handler ─────────────────────────────────────────────── */
     const onResize = () => {
       if (!container) return;
@@ -1242,6 +1521,7 @@ const FlightWorld3D = forwardRef(function FlightWorld3D(
     rafId = requestAnimationFrame(animate);
 
     return () => {
+      worldContextRef.current = null;
       cancelAnimationFrame(rafId);
       window.removeEventListener('resize', onResize);
       window.removeEventListener('orientationchange', onResize);
