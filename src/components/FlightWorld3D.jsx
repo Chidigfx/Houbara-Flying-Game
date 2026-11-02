@@ -613,9 +613,14 @@ const FlightWorld3D = forwardRef(function FlightWorld3D(
     const scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(startPalette.fog.getHex(), 0.0016);
 
+    const initW = container.clientWidth;
+    const initH = Math.max(1, container.clientHeight);
+    const initAspect = initW / initH;
+    const initFov = initAspect < 1.0 ? 52 + (1.0 - initAspect) * 28.0 : 52;
+
     const camera = new THREE.PerspectiveCamera(
-      52,
-      container.clientWidth / Math.max(1, container.clientHeight),
+      initFov,
+      initAspect,
       1.5,
       1100
     );
@@ -917,11 +922,14 @@ const FlightWorld3D = forwardRef(function FlightWorld3D(
       if (!container) return;
       const w = container.clientWidth;
       const h = Math.max(1, container.clientHeight);
-      camera.aspect = w / h;
+      const aspect = w / h;
+      camera.aspect = aspect;
+      camera.fov = aspect < 1.0 ? 52 + (1.0 - aspect) * 28.0 : 52;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
     };
     window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
 
     /* ── Main 60fps Flight & Render Loop ────────────────────────────── */
     let rafId;
@@ -1236,6 +1244,7 @@ const FlightWorld3D = forwardRef(function FlightWorld3D(
     return () => {
       cancelAnimationFrame(rafId);
       window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
       renderer.dispose();
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);

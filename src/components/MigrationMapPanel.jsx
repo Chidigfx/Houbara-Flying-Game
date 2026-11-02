@@ -83,16 +83,7 @@ export default function MigrationMapPanel({ progress = 0, currentFact = GAME_CON
   };
 
   return (
-    <div
-      style={{
-        position: 'absolute',
-        right: '2vw',
-        bottom: '3vh',
-        width: '40vw',
-        containerType: 'inline-size',
-        zIndex: 25,
-      }}
-    >
+    <div className="migration-map-panel">
       <div
         style={{
           display: 'flex',
@@ -109,9 +100,10 @@ export default function MigrationMapPanel({ progress = 0, currentFact = GAME_CON
       >
         {/* ── Map ── */}
         <div
+          className="migration-map-artwork"
           style={{
             position: 'relative',
-            flex: '0 0 47.5%',
+            flex: '0 0 46%',
             aspectRatio: `${MAP_VIEW.width} / ${MAP_VIEW.height}`,
             borderRadius: '1.3cqw',
             overflow: 'hidden',
@@ -212,9 +204,9 @@ export default function MigrationMapPanel({ progress = 0, currentFact = GAME_CON
           <h3
             style={{
               fontFamily: 'var(--font-sans)',
-              fontSize: '2.45cqw',
+              fontSize: 'clamp(10px, 2.45cqw, 15px)',
               fontWeight: 500,
-              letterSpacing: '0.32em',
+              letterSpacing: '0.24em',
               color: 'var(--color-ivory)',
               whiteSpace: 'nowrap',
               margin: 0,
@@ -233,8 +225,8 @@ export default function MigrationMapPanel({ progress = 0, currentFact = GAME_CON
                 <div key={n.name} style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.7cqw' }}>
                   <div
                     style={{
-                      width: '2.4cqw',
-                      height: '2.4cqw',
+                      width: 'clamp(8px, 2.4cqw, 14px)',
+                      height: 'clamp(8px, 2.4cqw, 14px)',
                       borderRadius: '50%',
                       boxSizing: 'border-box',
                       border: `2px solid ${GOLD}`,
@@ -243,7 +235,7 @@ export default function MigrationMapPanel({ progress = 0, currentFact = GAME_CON
                       transition: 'all 0.4s ease',
                     }}
                   />
-                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: '1.45cqw', letterSpacing: '0.12em', color: isActive ? GOLD_BRIGHT : 'var(--color-ivory-dim)' }}>
+                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(8px, 1.45cqw, 11px)', letterSpacing: '0.12em', color: isActive ? GOLD_BRIGHT : 'var(--color-ivory-dim)' }}>
                     {String(i + 1).padStart(2, '0')}
                   </span>
                 </div>
@@ -255,17 +247,17 @@ export default function MigrationMapPanel({ progress = 0, currentFact = GAME_CON
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.4cqw', whiteSpace: 'nowrap' }}>
             <Pin />
-            <span style={{ fontFamily: 'var(--font-sans)', fontSize: '1.55cqw', letterSpacing: '0.14em', color: 'var(--color-ivory-dim)' }}>
+            <span style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(8px, 1.55cqw, 12px)', letterSpacing: '0.14em', color: 'var(--color-ivory-dim)' }}>
               {cfg.destinationLabel}:
             </span>
-            <span style={{ fontFamily: 'var(--font-sans)', fontSize: '2cqw', fontWeight: 700, letterSpacing: '0.06em', color: GOLD_BRIGHT }}>
+            <span style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(9px, 2cqw, 13px)', fontWeight: 700, letterSpacing: '0.06em', color: GOLD_BRIGHT }}>
               {destination}
             </span>
           </div>
 
           <div style={{ height: 1, background: 'rgba(227,201,135,0.35)' }} />
 
-          <p style={{ margin: 0, paddingLeft: '3.7cqw', fontFamily: 'var(--font-sans)', fontSize: '2.1cqw', lineHeight: 1.45, fontWeight: 400, color: 'var(--color-ivory)' }}>
+          <p style={{ margin: 0, paddingLeft: '3.7cqw', fontFamily: 'var(--font-sans)', fontSize: 'clamp(8.5px, 2.1cqw, 13px)', lineHeight: 1.4, fontWeight: 400, color: 'var(--color-ivory)' }}>
             {currentFact}
           </p>
         </div>

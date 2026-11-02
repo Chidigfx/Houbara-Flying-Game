@@ -34,22 +34,26 @@ export default function JourneyCompleteScreen({ onPlayAgain, onReturnWelcome }) 
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#07120e', opacity: mounted ? 1 : 0, transition: 'opacity 0.9s ease' }}>
       <MenuBackdrop video={video.scenes[2].src} poster={backgrounds.completion} side="right" />
 
-      {/* Bird (placeholder, replace with perched-bird art) and text: one row, vertically centred */}
-      <div style={{ position: 'absolute', inset: 0, zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 calc(var(--u) * 7) 0 calc(var(--u) * 6)' }}>
-        <div style={{ width: 'calc(var(--u) * 36)', flexShrink: 0, pointerEvents: 'none' }}>
+      {/* Bird and text: responsive grid (stacked on mobile portrait, side-by-side on desktop/landscape) */}
+      <div className="menu-content-grid">
+        <div className="menu-bird-wrap">
           <Bird width="100%" />
         </div>
 
-      <div style={{ width: 'calc(var(--u) * 40)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-        <h1 className="display-title" style={{ fontSize: 'calc(var(--u) * 3.8)' }}>Journey<br />Complete</h1>
-        <div className="emblem" style={{ margin: '2.4vh 0' }} />
-        <p className="body-lg" style={{ marginBottom: '5.5vh' }}>Thank you for joining the Houbara’s journey.</p>
-        <button onClick={onPlayAgain} className="btn-gold-pill">
-          <span>Play Again</span>
-          <span className="chev">›</span>
-        </button>
-        <p className="hint">Returning to the start in <b>{secs}s</b></p>
-      </div>
+        <div className="menu-text-wrap">
+          <h1 className="display-title" style={{ fontSize: 'calc(var(--u) * 3.8)' }}>
+            Journey<br />Complete
+          </h1>
+          <div className="emblem" style={{ margin: '2.4vh 0' }} />
+          <p className="body-lg" style={{ marginBottom: '5.5vh' }}>
+            Thank you for joining the Houbara’s journey.
+          </p>
+          <button onClick={onPlayAgain} className="btn-gold-pill">
+            <span>Play Again</span>
+            <span className="chev">›</span>
+          </button>
+          <p className="hint">Returning to the start in <b>{secs}s</b></p>
+        </div>
       </div>
     </div>
   );

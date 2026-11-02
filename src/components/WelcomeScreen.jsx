@@ -28,24 +28,26 @@ export default function WelcomeScreen({ onStart }) {
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#07120e', opacity: mounted ? 1 : 0, transition: 'opacity 0.8s ease' }}>
       <MenuBackdrop video={video.scenes[0].src} poster={backgrounds.welcome} side="right" />
 
-      {/* Bird and text share one row and are vertically centred on each other */}
-      <div style={{ position: 'absolute', inset: 0, zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 calc(var(--u) * 7) 0 calc(var(--u) * 4)' }}>
-        <div style={{ width: 'calc(var(--u) * 46)', flexShrink: 0, pointerEvents: 'none' }}>
+      {/* Bird and text: responsive grid (stacked on mobile portrait, side-by-side on desktop/landscape) */}
+      <div className="menu-content-grid">
+        <div className="menu-bird-wrap">
           <Bird width="100%" />
         </div>
 
-      <div style={{ width: 'calc(var(--u) * 38)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-        <div className="emblem" />
-        <h1 className="display-title" style={{ fontSize: 'calc(var(--u) * 4.6)' }}>
-          Houbara<br />Migration
-        </h1>
-        <p className="eyebrow" style={{ marginTop: '1.6vh', marginBottom: '6vh' }}>A Journey Across Vast Landscapes</p>
-        <button onClick={onStart} className="btn-gold-pill">
-          <span>Begin The Journey</span>
-          <span className="chev">›</span>
-        </button>
-        <p className="hint">Press <b>Space</b> or select to start</p>
-      </div>
+        <div className="menu-text-wrap">
+          <div className="emblem" />
+          <h1 className="display-title" style={{ fontSize: 'calc(var(--u) * 4.6)' }}>
+            Houbara<br />Migration
+          </h1>
+          <p className="eyebrow" style={{ marginTop: '1.6vh', marginBottom: '6vh' }}>
+            A Journey Across Vast Landscapes
+          </p>
+          <button onClick={onStart} className="btn-gold-pill">
+            <span>Begin The Journey</span>
+            <span className="chev">›</span>
+          </button>
+          <p className="hint">Press <b>Space</b> or tap to start</p>
+        </div>
       </div>
     </div>
   );

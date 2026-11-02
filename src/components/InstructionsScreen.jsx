@@ -51,28 +51,30 @@ export default function InstructionsScreen({ onStartFlight }) {
       <MenuBackdrop video={video.scenes[1].src} poster={backgrounds.instructions} side="right" dim={1.6} />
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(7,18,14,0.45)' }} />
 
-      <div style={{ position: 'absolute', inset: 0, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 6%' }}>
-        <h2 className="display-title" style={{ fontSize: 'clamp(28px, 2.9vw, 56px)', letterSpacing: '0.3em' }}>How to Play</h2>
-        <div className="emblem" style={{ margin: '1.6vh 0 5vh' }} />
+      <div className="instructions-container">
+        <h2 className="display-title" style={{ fontSize: 'clamp(26px, 2.9vw, 56px)', letterSpacing: '0.24em' }}>How to Play</h2>
+        <div className="emblem" style={{ margin: '1.4vh 0 3.5vh' }} />
 
-        <div style={{ display: 'flex', gap: '2vw', width: '100%', maxWidth: 1400 }}>
+        <div className="instructions-cards-grid">
           {CARDS.map(({ heading, text, Art }) => (
-            <div key={heading} className="glass-card" style={{ flex: 1, padding: '3vh 1.8vw 3.4vh', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-              <div style={{ width: '100%', height: '17vh', marginBottom: '2.6vh' }}><Art /></div>
-              <h3 className="card-heading">{heading}</h3>
-              <p className="card-text">{text}</p>
+            <div key={heading} className="glass-card instructions-card-item">
+              <div className="instructions-card-art"><Art /></div>
+              <div>
+                <h3 className="card-heading">{heading}</h3>
+                <p className="card-text">{text}</p>
+              </div>
             </div>
           ))}
         </div>
 
-        <p className="eyebrow" style={{ marginTop: '4.4vh' }}>
-          Keyboard: use the <b>left</b> and <b>right</b> arrow keys to steer.
+        <p className="eyebrow" style={{ marginTop: '3vh' }}>
+          Steer using <b>screen touch</b>, <b>tilt</b>, or <b>arrow keys</b>.
         </p>
-        <button onClick={onStartFlight} className="btn-gold-pill" style={{ marginTop: '3vh' }}>
+        <button onClick={onStartFlight} className="btn-gold-pill" style={{ marginTop: '2.5vh' }}>
           <span>Start Flight</span>
           <span className="chev">›</span>
         </button>
-        <div style={{ marginTop: '3vh', width: 160, height: 2, background: 'rgba(200,169,107,0.18)', borderRadius: 1, overflow: 'hidden' }}>
+        <div style={{ marginTop: '2.5vh', width: 160, height: 2, background: 'rgba(200,169,107,0.18)', borderRadius: 1, overflow: 'hidden' }}>
           <div style={{ width: `${progress * 100}%`, height: '100%', background: '#c8a96b' }} />
         </div>
       </div>

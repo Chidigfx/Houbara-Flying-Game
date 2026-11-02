@@ -7,6 +7,7 @@ import React from 'react';
 export default function ObjectiveBanner({ visible = true }) {
   return (
     <div
+      className="objective-banner-wrap"
       style={{
         position: 'absolute',
         top: 28,

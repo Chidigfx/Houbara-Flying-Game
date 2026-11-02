@@ -45,6 +45,7 @@ export default function SteeringPrompt({
 
   return (
     <div
+      className="steering-prompt-pill"
       style={{
         position: 'absolute',
         bottom: 32,
