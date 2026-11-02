@@ -10,6 +10,7 @@ import SteeringPrompt from './SteeringPrompt';
 import MigrationMapPanel from './MigrationMapPanel';
 import CheckpointNotification from './CheckpointNotification';
 import DevPanel from './DevPanel';
+import MobileControls from './MobileControls';
 
 /**
  * GAMEPLAY SCREEN
@@ -31,7 +32,14 @@ const smooth = (t) => t * t * (3 - 2 * t);
 const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 
 export default function GameScreen({ onComplete, onExit }) {
-  const { getInput, gamepadConnected, gamepadId } = useInput();
+  const {
+    getInput,
+    gamepadConnected,
+    gamepadId,
+    isTouchDevice,
+    setLeftDown,
+    setRightDown,
+  } = useInput();
   const config = GAME_CONFIG;
   const scenes = config.assets.video.scenes;
 
@@ -403,8 +411,26 @@ export default function GameScreen({ onComplete, onExit }) {
       <div className="screen-frame" />
       <ObjectiveBanner visible={showObjective} />
       <CheckpointNotification checkpoint={activeCheckpoint} />
-      <SteeringPrompt visible={showSteeringPrompt} />
+      <SteeringPrompt
+        visible={showSteeringPrompt}
+        isTouch={isTouchDevice}
+        onLeftDown={() => setLeftDown(true)}
+        onLeftUp={() => setLeftDown(false)}
+        onRightDown={() => setRightDown(true)}
+        onRightUp={() => setRightDown(false)}
+      />
       <MigrationMapPanel progress={mapProgress} currentFact={currentFact} />
+
+      {isTouchDevice && (
+        <MobileControls
+          onLeftDown={() => setLeftDown(true)}
+          onLeftUp={() => setLeftDown(false)}
+          onRightDown={() => setRightDown(true)}
+          onRightUp={() => setRightDown(false)}
+          onSkipGate={skipToGate}
+          onExit={onExit}
+        />
+      )}
 
       <DevPanel
         visible={showDevPanel}
