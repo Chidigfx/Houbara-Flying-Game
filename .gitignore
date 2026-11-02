@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# Production build & archive
+dist/
+dist-itch-upload.zip
+
+# Local env & editor files
+.env
+.env.*
+.DS_Store
+Thumbs.db
+*.log

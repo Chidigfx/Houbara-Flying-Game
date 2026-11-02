@@ -1,0 +1,27 @@
+/* ── App Shell & Exhibition Display Container ───────────────────── */
+
+.app-root {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #08100d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ensure clean scaling on 16:9 displays */
+@media (min-aspect-ratio: 16/9) {
+  .app-root {
+    height: 100vh;
+    width: 100vw;
+  }
+}
+
+@media (max-aspect-ratio: 16/9) {
+  .app-root {
+    width: 100vw;
+    height: 100vh;
+  }
+}

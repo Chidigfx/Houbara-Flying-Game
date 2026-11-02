@@ -1,0 +1,178 @@
+/* ── Global Reset & Exhibition Base ─────────────────────────────── */
+
+:root {
+  --color-gold: #c8a96b;
+  --color-gold-light: #dec38b;
+  --color-gold-dim: rgba(200, 169, 107, 0.35);
+  --color-forest: #0d1e18;
+  --color-forest-translucent: rgba(13, 30, 24, 0.82);
+  --color-forest-card: rgba(16, 34, 28, 0.75);
+  --color-ivory: #f5f0e6;
+  --color-ivory-dim: rgba(245, 240, 230, 0.65);
+  --color-ivory-faint: rgba(245, 240, 230, 0.35);
+  --font-serif: 'Cinzel', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #080f0c;
+  color: var(--color-ivory);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+  cursor: default;
+}
+
+html {
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
+/* Button & interactive focus outlines disabled for kiosk exhibition */
+button, input, select {
+  font-family: inherit;
+  outline: none;
+}
+
+/* Screen frame overlay with subtle gold line */
+.screen-frame {
+  position: absolute;
+  inset: 16px;
+  border: 1px solid rgba(200, 169, 107, 0.28);
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 30;
+}
+
+/* Subtle topographic contour lines SVG watermark */
+.contour-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(circle at 100% 0%, rgba(200, 169, 107, 0.08) 0%, transparent 60%),
+                    radial-gradient(circle at 0% 100%, rgba(200, 169, 107, 0.06) 0%, transparent 50%);
+  z-index: 2;
+}
+
+/* Cinematic gold pill button */
+.btn-gold-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: var(--color-forest-translucent);
+  border: 1px solid var(--color-gold);
+  border-radius: 9999px;
+  color: var(--color-gold);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 16px 42px;
+  cursor: pointer;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(200, 169, 107, 0.3);
+}
+
+.btn-gold-pill:hover,
+.btn-gold-pill:focus-visible {
+  background: rgba(22, 48, 38, 0.9);
+  border-color: var(--color-gold-light);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(200, 169, 107, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.btn-gold-pill:active {
+  transform: translateY(0);
+}
+
+/* -- Shared exhibition UI ----------------------------------------- */
+.display-title {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  line-height: 1.18;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-ivory);
+  text-shadow: 0 2px 18px rgba(0,0,0,0.55);
+}
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: clamp(12px, 0.95vw, 19px);
+  font-weight: 400;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--color-ivory-dim);
+}
+.eyebrow b { color: var(--color-gold); font-weight: 600; }
+.body-lg {
+  font-family: var(--font-sans);
+  font-size: clamp(15px, 1.2vw, 24px);
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  color: var(--color-ivory-dim);
+}
+.hint {
+  margin-top: 2.6vh;
+  font-size: clamp(11px, 0.8vw, 16px);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(245,240,230,0.6);
+}
+.hint b { color: var(--color-gold); font-weight: 500; }
+.emblem {
+  width: 150px; height: 1px; margin-bottom: 3vh; position: relative;
+  background: linear-gradient(90deg, transparent, var(--color-gold-dim), transparent);
+}
+.emblem::after {
+  content: ''; position: absolute; left: 50%; top: 50%; width: 9px; height: 9px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  border: 1px solid var(--color-gold); background: #0a1a14;
+}
+.glass-card {
+  background: linear-gradient(180deg, rgba(18,40,32,0.72), rgba(10,24,19,0.78));
+  border: 1px solid rgba(200,169,107,0.38);
+  border-radius: 18px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 18px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(200,169,107,0.18);
+}
+.card-heading {
+  font-family: var(--font-serif);
+  font-size: clamp(16px, 1.35vw, 28px);
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  margin-bottom: 1.2vh;
+}
+.card-text {
+  font-size: clamp(13px, 1vw, 20px);
+  line-height: 1.55;
+  font-weight: 300;
+  color: var(--color-ivory-dim);
+}
+.chev { font-size: 1.5em; line-height: 0.6; font-weight: 300; }
+.btn-gold-pill { font-size: clamp(13px, 1vw, 20px); padding: 1.7vh 3vw; min-width: 17vw; }
+
+
+/* Stage unit: 1 = 1vw on a 16:9 screen, shrinks on wider/shorter windows so layouts never crop. */
+:root { --u: min(1vw, 1.7778vh); }
+.btn-gold-pill { white-space: nowrap; }
