@@ -7,6 +7,12 @@
  * ╚════════════════════════════════════════════════════════════════════╝
  */
 
+const asset = (path) => {
+  const base = import.meta.env.BASE_URL || './';
+  const clean = path.startsWith('/') ? path.slice(1) : path;
+  return `${base}${clean}`;
+};
+
 const GAME_CONFIG = {
 
   /* ── Exhibition & Display ────────────────────────────────────────── */
@@ -55,59 +61,59 @@ const GAME_CONFIG = {
   assets: {
     // Background images for menu screens
     backgrounds: {
-      welcome: '/assets/backgrounds/welcome-bg.jpg',
-      instructions: '/assets/backgrounds/instructions-bg.jpg',
-      completion: '/assets/backgrounds/completion-bg.jpg',
+      welcome: asset('/assets/backgrounds/welcome-bg.jpg'),
+      instructions: asset('/assets/backgrounds/instructions-bg.jpg'),
+      completion: asset('/assets/backgrounds/completion-bg.jpg'),
     },
 
     // Bird assets
     bird: {
-      image: '/assets/bird/bird.png',           // Transparent PNG cutout
-      welcomeHero: '/assets/bird/bird_welcome_crop.png',
-      completionPerched: '/assets/bird/bird_perched_crop.png',
-      modelGlb: '/assets/bird/bird.glb',
+      image: asset('/assets/bird/bird.png'),           // Transparent PNG cutout
+      welcomeHero: asset('/assets/bird/bird_welcome_crop.png'),
+      completionPerched: asset('/assets/bird/bird_perched_crop.png'),
+      modelGlb: asset('/assets/bird/bird.glb'),
     },
 
     // Map & icons
     map: {
-      background: '/assets/map/minimap_reference.png',
+      background: asset('/assets/map/minimap_reference.png'),
     },
     icons: {
-      controllersHold: '/assets/icons/controllers_hold.png',
-      controllersSteer: '/assets/icons/controllers_steer.png',
-      routeCard: '/assets/icons/route_card.png',
+      controllersHold: asset('/assets/icons/controllers_hold.png'),
+      controllersSteer: asset('/assets/icons/controllers_steer.png'),
+      routeCard: asset('/assets/icons/route_card.png'),
     },
 
     // Pre-rendered Journey Videos
     video: {
-      fullJourney: '/assets/video/scene1-valley.mp4',
+      fullJourney: asset('/assets/video/scene1-valley.mp4'),
       scenes: [
         {
           id: 'valley',
           name: 'Arabian Oasis & Dunes',
           subtitle: 'UAE Wintering Habitat',
-          src: '/assets/video/scene1-valley.mp4',
+          src: asset('/assets/video/scene1-valley.mp4'),
           durationSec: 22,
         },
         {
           id: 'mountains',
           name: 'Zagros Mountain Crossing',
           subtitle: 'High Altitude Pass — Iran',
-          src: '/assets/video/scene2-mountains.mp4',
+          src: asset('/assets/video/scene2-mountains.mp4'),
           durationSec: 22,
         },
         {
           id: 'desert',
           name: 'Karakum Desert Passage',
           subtitle: 'Arid Steppe & Canyons — Turkmenistan',
-          src: '/assets/video/scene3-desert.mp4',
+          src: asset('/assets/video/scene3-desert.mp4'),
           durationSec: 22,
         },
         {
           id: 'snow',
           name: 'Northern Breeding Grounds',
           subtitle: 'Central Asian Steppe — Kazakhstan',
-          src: '/assets/video/scene4-snow.mp4',
+          src: asset('/assets/video/scene4-snow.mp4'),
           durationSec: 24,
         },
       ],
@@ -119,7 +125,7 @@ const GAME_CONFIG = {
     title: 'MIGRATION JOURNEY',
     routeLabel: 'ILLUSTRATIVE ROUTE',
     destinationLabel: 'CURRENT DESTINATION',
-    mapImage: '/assets/map/region-map.svg',
+    mapImage: asset('/assets/map/region-map.svg'),
     nodes: [
       { name: 'UAE',          lonLat: [54.4, 24.45], labelSide: 'right' },
       { name: 'IRAN',         lonLat: [58.5, 31.0],  labelSide: 'left', showLabel: false },
